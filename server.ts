@@ -7,6 +7,7 @@ import { isUUID, isValidMatchRequest } from "./utils/validation";
 import { auth } from "./utils/auth";
 import {
   deleteClient,
+  getClientId,
   getClientSocketById,
   getClientsExcept,
 } from "./utils/users";
@@ -25,6 +26,7 @@ const server = net.createServer((socket) => {
 
   socket.on("data", (data) => {
     const { type, payload } = decoder(data);
+
     if (!authenticated) {
       if (type === MessageType.AUTH_REQUEST) {
         clientID = auth(socket, payload);
@@ -51,6 +53,7 @@ const server = net.createServer((socket) => {
 
   socket.on("error", (err) => {
     console.error("Socket error:", err);
+    clientID;
     deleteClient(clientID);
   });
 });
@@ -71,7 +74,6 @@ function handleClientMessages(
   if (opponentId !== null) {
     opponentSocket = getClientSocketById(opponentId);
   }
-
   switch (type) {
     case MessageType.CLIENT_LIST_REQUEST:
       sendMessage(
@@ -87,6 +89,9 @@ function handleClientMessages(
         "Please send the ID of the desired opponent, and a word"
       );
       break;
+    case 21:
+      sendMessage(socket, MessageType.AUTH_SUCCESS, `Welcome ${clientId}`);
+      break;
     case MessageType.MATCH_CLIENT_ID:
       const matchRequestPayload = isValidMatchRequest(payload.toString());
       if (matchRequestPayload) {
@@ -98,7 +103,6 @@ function handleClientMessages(
             "Invalid message format"
           );
         }
-
         opponentId = playerId as uuid;
         opponentSocket = getClientSocketById(playerId as uuid);
         addMatch(clientId, opponentId, word);
@@ -130,13 +134,21 @@ function handleClientMessages(
         );
         sendMessage(
           getClientSocketById(getOpponentId(clientId)),
-          MessageType.MESSAGE,
+          19,
           "Your word has been guessed!"
         );
         deleteMatchFor(clientId);
       } else {
         sendMessage(socket, MessageType.MATCH_ATTEMPT_WRONG, "Guess again!");
       }
+      break;
+    case 17:
+      sendMessage(socket, MessageType.AUTH_SUCCESS, `Welcome ${clientId}`);
+      sendMessage(
+        opponentSocket,
+        MessageType.AUTH_SUCCESS,
+        `Your opponent gave up, Welcome again ${opponentId}`
+      );
       break;
     case MessageType.MATCH_HINT:
       sendMessage(opponentSocket, MessageType.MATCH_HINT, payload.toString());

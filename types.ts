@@ -17,6 +17,10 @@ export enum MessageType {
   MATCH_ATTEMPT = 14,
   MATCH_ATTEMPT_WRONG = 15,
   MATCH_ATTEMPT_RIGHT = 16,
+  MATCH_GIVE_UP = 17,
+  MATCH_END_PREMATURE = 18,
+  MATCH_END_GUESSED = 19,
+  RESET = 21,
 }
 
 export type MatchKey = [uuid, uuid];

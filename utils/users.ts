@@ -18,6 +18,20 @@ export function getClientSocketById(clientId: uuid): net.Socket {
   return clients.get(clientId);
 }
 
+export function getClientId(socket: net.Socket): uuid | null {
+  console.log(socket);
+  if (socket === null || socket === undefined) {
+    return null;
+  }
+  const entries = Array.from(clients.entries());
+  for (const [clientId, clientSocket] of entries) {
+    if (clientSocket === socket) {
+      return clientId;
+    }
+  }
+  return null;
+}
+
 export function getClientsExcept(clientId: uuid): uuid[] {
   const clientSocket = clients.get(clientId);
   if (clientSocket) {
