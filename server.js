@@ -37,6 +37,7 @@ var server = net.createServer(function (socket) {
     });
     socket.on("error", function (err) {
         console.error("Socket error:", err);
+        clientID;
         (0, users_1.deleteClient)(clientID);
     });
 });
@@ -56,6 +57,9 @@ function handleClientMessages(clientId, type, payload, socket) {
             break;
         case types_1.MessageType.MATCH_REQUEST:
             (0, messaging_1.sendMessage)(socket, types_1.MessageType.MATCH_RESPONSE, "Please send the ID of the desired opponent, and a word");
+            break;
+        case 21:
+            (0, messaging_1.sendMessage)(socket, types_1.MessageType.AUTH_SUCCESS, "Welcome ".concat(clientId));
             break;
         case types_1.MessageType.MATCH_CLIENT_ID:
             var matchRequestPayload = (0, validation_1.isValidMatchRequest)(payload.toString());
@@ -77,12 +81,16 @@ function handleClientMessages(clientId, type, payload, socket) {
         case types_1.MessageType.MATCH_ATTEMPT:
             if (payload.toString() === (0, matches_1.getMatchWord)(clientId)) {
                 (0, messaging_1.sendMessage)(socket, types_1.MessageType.MATCH_ATTEMPT_RIGHT, "Congratulations, you guessed the word!");
-                (0, messaging_1.sendMessage)((0, users_1.getClientSocketById)((0, matches_1.getOpponentId)(clientId)), types_1.MessageType.MESSAGE, "Your word has been guessed!");
+                (0, messaging_1.sendMessage)((0, users_1.getClientSocketById)((0, matches_1.getOpponentId)(clientId)), 19, "Your word has been guessed!");
                 (0, matches_1.deleteMatchFor)(clientId);
             }
             else {
                 (0, messaging_1.sendMessage)(socket, types_1.MessageType.MATCH_ATTEMPT_WRONG, "Guess again!");
             }
+            break;
+        case 17:
+            (0, messaging_1.sendMessage)(socket, types_1.MessageType.AUTH_SUCCESS, "Welcome ".concat(clientId));
+            (0, messaging_1.sendMessage)(opponentSocket, types_1.MessageType.AUTH_SUCCESS, "Your opponent gave up, Welcome again ".concat(opponentId));
             break;
         case types_1.MessageType.MATCH_HINT:
             (0, messaging_1.sendMessage)(opponentSocket, types_1.MessageType.MATCH_HINT, payload.toString());
